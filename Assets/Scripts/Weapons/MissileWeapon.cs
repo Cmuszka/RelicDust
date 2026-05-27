@@ -13,8 +13,9 @@ public class MissileWeapon : WeaponSystem
             return;
         }
 
-        Ship target = GetTarget();
-        if (requireTargetLock && target == null)
+        Ship shipTarget = GetShipTarget();
+        MissileProjectile missileTarget = GetMissileTarget();
+        if (requireTargetLock && shipTarget == null && missileTarget == null)
         {
             return;
         }
@@ -27,7 +28,14 @@ public class MissileWeapon : WeaponSystem
             firePoint.position,
             Quaternion.LookRotation(Vector3.forward, launchDirection));
 
-        missile.Initialize(launchDirection, ownerShip, target);
+        if (missileTarget != null)
+        {
+            missile.Initialize(launchDirection, ownerShip, missileTarget);
+        }
+        else
+        {
+            missile.Initialize(launchDirection, ownerShip, shipTarget);
+        }
     }
 
     public override void Fire()
@@ -35,7 +43,7 @@ public class MissileWeapon : WeaponSystem
         Fire(firePoint != null ? firePoint.up : transform.up);
     }
 
-    private Ship GetTarget()
+    private Ship GetShipTarget()
     {
         if (ownerShip == null || ownerShip.targeting == null || !ownerShip.targeting.HasTarget())
         {
@@ -43,5 +51,15 @@ public class MissileWeapon : WeaponSystem
         }
 
         return ownerShip.targeting.currentTarget;
+    }
+
+    private MissileProjectile GetMissileTarget()
+    {
+        if (ownerShip == null || ownerShip.targeting == null || !ownerShip.targeting.HasMissileTarget())
+        {
+            return null;
+        }
+
+        return ownerShip.targeting.currentMissileTarget;
     }
 }

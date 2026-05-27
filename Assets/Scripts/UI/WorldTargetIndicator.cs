@@ -7,7 +7,18 @@ public class WorldTargetIndicator : MonoBehaviour
 
     private RectTransform rectTransform;
 
-    public RectTransform RectTransform => rectTransform;
+    public RectTransform RectTransform
+    {
+        get
+        {
+            if (rectTransform == null)
+            {
+                rectTransform = GetComponent<RectTransform>();
+            }
+
+            return rectTransform;
+        }
+    }
 
     private void Awake()
     {

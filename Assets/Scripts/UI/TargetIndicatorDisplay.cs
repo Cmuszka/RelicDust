@@ -9,6 +9,7 @@ public class TargetIndicatorDisplay : MonoBehaviour
     [SerializeField] private WorldTargetIndicator selectedTargetIndicatorPrefab;
     [SerializeField] private WorldTargetIndicator offscreenTargetArrowPrefab;
     [SerializeField] private WorldTargetIndicator missileIndicatorPrefab;
+    [SerializeField] private WorldTargetIndicator hostileShipIndicatorPrefab;
     [SerializeField] private Camera canvasCamera;
     [SerializeField] private bool findPlayerOnStart = true;
 
@@ -16,15 +17,27 @@ public class TargetIndicatorDisplay : MonoBehaviour
     [SerializeField] private Color selectedShipColor = Color.cyan;
     [SerializeField] private Color selectedMissileColor = new Color(1f, 0.65f, 0.1f);
     [SerializeField] private Color hostileMissileColor = Color.red;
+    [SerializeField] private Color hostileShipColor = new Color(1f, 0.35f, 0.2f, 0.7f);
 
     [Header("Missiles")]
     [SerializeField] private bool showAllHostileMissiles = true;
 
+    [Header("Ships")]
+    [SerializeField] private bool showAllHostileShips = true;
+
     [Header("Offscreen")]
     [SerializeField] private float screenEdgePadding = 40f;
 
+    [Header("Selected Indicator Size")]
+    [SerializeField] private bool scaleSelectedIndicatorToTarget = true;
+    [SerializeField] private float selectedIndicatorPadding = 18f;
+    [SerializeField] private Vector2 selectedIndicatorMinSize = new Vector2(28f, 28f);
+    [SerializeField] private Vector2 selectedIndicatorMaxSize = new Vector2(180f, 180f);
+
     private readonly List<WorldTargetIndicator> activeMissileIndicators = new List<WorldTargetIndicator>();
     private readonly Queue<WorldTargetIndicator> pooledMissileIndicators = new Queue<WorldTargetIndicator>();
+    private readonly List<WorldTargetIndicator> activeShipIndicators = new List<WorldTargetIndicator>();
+    private readonly Queue<WorldTargetIndicator> pooledShipIndicators = new Queue<WorldTargetIndicator>();
 
     private Camera mainCamera;
     private WorldTargetIndicator selectedTargetIndicator;
@@ -66,6 +79,7 @@ public class TargetIndicatorDisplay : MonoBehaviour
         }
 
         UpdateSelectedTargetIndicator();
+        UpdateShipIndicators();
         UpdateMissileIndicators();
     }
 
@@ -92,6 +106,7 @@ public class TargetIndicatorDisplay : MonoBehaviour
 
         selectedTargetIndicator.SetColor(targetColor);
         bool isOnScreen = TryPlaceIndicator(selectedTargetIndicator.RectTransform, targetTransform.position);
+        UpdateSelectedIndicatorSize(selectedTargetIndicator.RectTransform, targetTransform);
         selectedTargetIndicator.gameObject.SetActive(isOnScreen);
         UpdateOffscreenArrow(targetTransform.position, targetColor, isOnScreen);
     }
@@ -155,8 +170,15 @@ public class TargetIndicatorDisplay : MonoBehaviour
             return;
         }
 
-        offscreenTargetArrow.RectTransform.anchoredPosition = localPosition;
-        offscreenTargetArrow.RectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
+        RectTransform arrowTransform = offscreenTargetArrow.RectTransform;
+        if (arrowTransform == null)
+        {
+            offscreenTargetArrow.gameObject.SetActive(false);
+            return;
+        }
+
+        arrowTransform.anchoredPosition = localPosition;
+        arrowTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
         offscreenTargetArrow.SetColor(color);
         offscreenTargetArrow.gameObject.SetActive(true);
     }
@@ -185,9 +207,44 @@ public class TargetIndicatorDisplay : MonoBehaviour
         }
     }
 
+    private void UpdateShipIndicators()
+    {
+        HideShipIndicators();
+
+        if (!showAllHostileShips || indicatorRoot == null)
+        {
+            return;
+        }
+
+        WorldTargetIndicator shipIndicatorPrefab = hostileShipIndicatorPrefab != null
+            ? hostileShipIndicatorPrefab
+            : selectedTargetIndicatorPrefab;
+
+        if (shipIndicatorPrefab == null)
+        {
+            return;
+        }
+
+        Ship[] ships = FindObjectsByType<Ship>(FindObjectsSortMode.None);
+        foreach (Ship ship in ships)
+        {
+            if (!IsLiveHostileShip(ship) || IsSelectedShip(ship))
+            {
+                continue;
+            }
+
+            WorldTargetIndicator indicator = GetShipIndicator(shipIndicatorPrefab);
+            indicator.SetColor(hostileShipColor);
+            bool isOnScreen = TryPlaceIndicator(indicator.RectTransform, ship.transform.position);
+            UpdateSelectedIndicatorSize(indicator.RectTransform, ship.transform);
+            indicator.gameObject.SetActive(isOnScreen);
+            activeShipIndicators.Add(indicator);
+        }
+    }
+
     private bool TryPlaceIndicator(RectTransform indicator, Vector3 worldPosition)
     {
-        if (mainCamera == null || indicatorRoot == null)
+        if (mainCamera == null || indicatorRoot == null || indicator == null)
         {
             return false;
         }
@@ -213,6 +270,52 @@ public class TargetIndicatorDisplay : MonoBehaviour
 
         indicator.anchoredPosition = localPosition;
         return IsOnScreen(viewportPosition);
+    }
+
+    private void UpdateSelectedIndicatorSize(RectTransform indicator, Transform targetTransform)
+    {
+        if (!scaleSelectedIndicatorToTarget || indicator == null || targetTransform == null || mainCamera == null)
+        {
+            return;
+        }
+
+        Bounds targetBounds;
+        if (!TryGetTargetBounds(targetTransform, out targetBounds))
+        {
+            return;
+        }
+
+        Vector2 screenMin = mainCamera.WorldToScreenPoint(targetBounds.min);
+        Vector2 screenMax = mainCamera.WorldToScreenPoint(targetBounds.max);
+        Vector2 screenSize = new Vector2(
+            Mathf.Abs(screenMax.x - screenMin.x),
+            Mathf.Abs(screenMax.y - screenMin.y));
+
+        Vector2 targetSize = screenSize + Vector2.one * selectedIndicatorPadding;
+        targetSize.x = Mathf.Clamp(targetSize.x, selectedIndicatorMinSize.x, selectedIndicatorMaxSize.x);
+        targetSize.y = Mathf.Clamp(targetSize.y, selectedIndicatorMinSize.y, selectedIndicatorMaxSize.y);
+
+        indicator.sizeDelta = targetSize;
+    }
+
+    private bool TryGetTargetBounds(Transform targetTransform, out Bounds bounds)
+    {
+        Renderer renderer = targetTransform.GetComponentInChildren<Renderer>();
+        if (renderer != null)
+        {
+            bounds = renderer.bounds;
+            return true;
+        }
+
+        Collider2D collider = targetTransform.GetComponentInChildren<Collider2D>();
+        if (collider != null)
+        {
+            bounds = collider.bounds;
+            return true;
+        }
+
+        bounds = new Bounds(targetTransform.position, Vector3.one);
+        return false;
     }
 
     private bool TryGetOffscreenIndicatorPosition(Vector3 worldPosition, out Vector2 localPosition, out float angle)
@@ -278,6 +381,16 @@ public class TargetIndicatorDisplay : MonoBehaviour
         return Instantiate(missileIndicatorPrefab, indicatorRoot);
     }
 
+    private WorldTargetIndicator GetShipIndicator(WorldTargetIndicator shipIndicatorPrefab)
+    {
+        if (pooledShipIndicators.Count > 0)
+        {
+            return pooledShipIndicators.Dequeue();
+        }
+
+        return Instantiate(shipIndicatorPrefab, indicatorRoot);
+    }
+
     private void HideMissileIndicators()
     {
         for (int i = 0; i < activeMissileIndicators.Count; i++)
@@ -288,6 +401,43 @@ public class TargetIndicatorDisplay : MonoBehaviour
         }
 
         activeMissileIndicators.Clear();
+    }
+
+    private void HideShipIndicators()
+    {
+        for (int i = 0; i < activeShipIndicators.Count; i++)
+        {
+            WorldTargetIndicator indicator = activeShipIndicators[i];
+            indicator.gameObject.SetActive(false);
+            pooledShipIndicators.Enqueue(indicator);
+        }
+
+        activeShipIndicators.Clear();
+    }
+
+    private bool IsLiveHostileShip(Ship ship)
+    {
+        if (ship == null || ship == playerShip || ship.IsDestroyed)
+        {
+            return false;
+        }
+
+        if (ship.health != null && ship.health.IsDead)
+        {
+            return false;
+        }
+
+        if (playerShip == null)
+        {
+            return true;
+        }
+
+        return ship.Team != ShipTeam.Neutral && ship.Team != playerShip.Team;
+    }
+
+    private bool IsSelectedShip(Ship ship)
+    {
+        return targetingSystem != null && targetingSystem.currentTarget == ship;
     }
 
     private bool IsHostileMissile(MissileProjectile missile)

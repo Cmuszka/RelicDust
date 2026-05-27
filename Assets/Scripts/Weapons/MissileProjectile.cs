@@ -12,6 +12,7 @@ public class MissileProjectile : MonoBehaviour
     private Rigidbody2D rb;
     private Ship ownerShip;
     private Ship targetShip;
+    private MissileProjectile targetMissile;
     private ShipTeam ownerTeam = ShipTeam.Neutral;
     private Vector2 direction;
     private bool hasHit;
@@ -29,6 +30,18 @@ public class MissileProjectile : MonoBehaviour
         direction = launchDirection != Vector2.zero ? launchDirection.normalized : transform.up;
         ownerShip = newOwnerShip;
         targetShip = newTargetShip;
+        targetMissile = null;
+        ownerTeam = ownerShip != null ? ownerShip.Team : ShipTeam.Neutral;
+
+        Destroy(gameObject, lifetime);
+    }
+
+    public void Initialize(Vector2 launchDirection, Ship newOwnerShip, MissileProjectile newTargetMissile)
+    {
+        direction = launchDirection != Vector2.zero ? launchDirection.normalized : transform.up;
+        ownerShip = newOwnerShip;
+        targetShip = null;
+        targetMissile = newTargetMissile;
         ownerTeam = ownerShip != null ? ownerShip.Team : ShipTeam.Neutral;
 
         Destroy(gameObject, lifetime);
@@ -43,17 +56,33 @@ public class MissileProjectile : MonoBehaviour
 
     private void UpdateDirection()
     {
-        if (targetShip == null || targetShip.IsDestroyed)
+        Vector2? targetPosition = GetTargetPosition();
+        if (!targetPosition.HasValue)
         {
             return;
         }
 
-        Vector2 desiredDirection = (targetShip.transform.position - transform.position).normalized;
+        Vector2 desiredDirection = (targetPosition.Value - (Vector2)transform.position).normalized;
         float currentAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         float desiredAngle = Mathf.Atan2(desiredDirection.y, desiredDirection.x) * Mathf.Rad2Deg;
         float newAngle = Mathf.MoveTowardsAngle(currentAngle, desiredAngle, turnSpeed * Time.fixedDeltaTime);
         float radians = newAngle * Mathf.Deg2Rad;
         direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)).normalized;
+    }
+
+    private Vector2? GetTargetPosition()
+    {
+        if (targetMissile != null)
+        {
+            return targetMissile.transform.position;
+        }
+
+        if (targetShip != null && !targetShip.IsDestroyed)
+        {
+            return targetShip.transform.position;
+        }
+
+        return null;
     }
 
     private void OnTriggerEnter2D(Collider2D other)

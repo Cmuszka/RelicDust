@@ -16,6 +16,12 @@ public class PlayerCameraFollow : MonoBehaviour
     [SerializeField] private float speedForMaxLookAhead = 15f;
     [SerializeField] private float lookAheadSmoothTime = 0.35f;
 
+    [Header("Threat Framing")]
+    [SerializeField] private bool frameNearbyThreats = true;
+    [SerializeField] private float maxThreatFocusDistance = 5f;
+    [SerializeField] private float threatFocusStrength = 0.45f;
+    [SerializeField] private float threatFocusSmoothTime = 0.4f;
+
     [Header("Zoom")]
     [SerializeField] private float minOrthographicSize = 5f;
     [SerializeField] private float maxOrthographicSize = 12f;
@@ -34,6 +40,8 @@ public class PlayerCameraFollow : MonoBehaviour
     private Vector3 followVelocity;
     private Vector2 currentLookAhead;
     private Vector2 lookAheadVelocity;
+    private Vector2 currentThreatFocus;
+    private Vector2 threatFocusVelocity;
     private float targetOrthographicSize;
     private float manualZoomOffset;
     private float zoomVelocity;
@@ -81,7 +89,14 @@ public class PlayerCameraFollow : MonoBehaviour
             ref lookAheadVelocity,
             lookAheadSmoothTime);
 
-        Vector3 targetPosition = target.position + baseOffset + (Vector3)currentLookAhead;
+        Vector2 desiredThreatFocus = GetDesiredThreatFocus();
+        currentThreatFocus = Vector2.SmoothDamp(
+            currentThreatFocus,
+            desiredThreatFocus,
+            ref threatFocusVelocity,
+            threatFocusSmoothTime);
+
+        Vector3 targetPosition = target.position + baseOffset + (Vector3)(currentLookAhead + currentThreatFocus);
         transform.position = Vector3.SmoothDamp(
             transform.position,
             targetPosition,
@@ -215,6 +230,69 @@ public class PlayerCameraFollow : MonoBehaviour
         }
 
         return threatScore;
+    }
+
+    private Vector2 GetDesiredThreatFocus()
+    {
+        if (!frameNearbyThreats || target == null)
+        {
+            return Vector2.zero;
+        }
+
+        Ship ownerShip = target.GetComponent<Ship>();
+        Vector2 targetPosition = target.position;
+        Vector2 weightedOffset = Vector2.zero;
+        float totalWeight = 0f;
+
+        Ship[] ships = FindObjectsByType<Ship>(FindObjectsSortMode.None);
+        foreach (Ship ship in ships)
+        {
+            if (!IsHostileShip(ownerShip, ship))
+            {
+                continue;
+            }
+
+            AddThreatFocus(targetPosition, ship.transform.position, shipThreatWeight, ref weightedOffset, ref totalWeight);
+        }
+
+        MissileProjectile[] missiles = FindObjectsByType<MissileProjectile>(FindObjectsSortMode.None);
+        foreach (MissileProjectile missile in missiles)
+        {
+            if (!IsHostileMissile(ownerShip, missile))
+            {
+                continue;
+            }
+
+            AddThreatFocus(targetPosition, missile.transform.position, missileThreatWeight, ref weightedOffset, ref totalWeight);
+        }
+
+        if (totalWeight <= 0f)
+        {
+            return Vector2.zero;
+        }
+
+        Vector2 focusOffset = weightedOffset / totalWeight * threatFocusStrength;
+        return Vector2.ClampMagnitude(focusOffset, maxThreatFocusDistance);
+    }
+
+    private void AddThreatFocus(
+        Vector2 targetPosition,
+        Vector2 threatPosition,
+        float weight,
+        ref Vector2 weightedOffset,
+        ref float totalWeight)
+    {
+        float distance = Vector2.Distance(targetPosition, threatPosition);
+        if (distance > threatScanRadius)
+        {
+            return;
+        }
+
+        float proximity = 1f - distance / threatScanRadius;
+        float finalWeight = weight * Mathf.Lerp(0.35f, 1f, proximity);
+
+        weightedOffset += (threatPosition - targetPosition) * finalWeight;
+        totalWeight += finalWeight;
     }
 
     private float GetWeightedThreat(Vector2 targetPosition, Vector2 threatPosition, float weight)

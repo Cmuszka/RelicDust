@@ -203,16 +203,21 @@ public class TargetingSystem : MonoBehaviour
 
     public bool IsDirectionAlignedWithTarget(Vector2 direction, float allowedAngle)
     {
-        if (!HasTarget() || direction == Vector2.zero)
+        if (!HasTarget() && !HasMissileTarget() || direction == Vector2.zero)
         {
             return false;
         }
 
-        Vector2 directionToTarget = (currentTarget.transform.position - transform.position).normalized;
+        Vector2 directionToTarget = GetDirectionToCurrentTarget();
         return Vector2.Angle(direction.normalized, directionToTarget) <= allowedAngle;
     }
 
     public MissileProjectile FindNearestHostileMissile()
+    {
+        return FindNearestHostileMissile(targetingRange);
+    }
+
+    public MissileProjectile FindNearestHostileMissile(float maxRange)
     {
         MissileProjectile[] missiles = FindObjectsByType<MissileProjectile>(FindObjectsSortMode.None);
         MissileProjectile bestMissile = null;
@@ -226,6 +231,11 @@ public class TargetingSystem : MonoBehaviour
             }
 
             float distance = Vector2.Distance(transform.position, missile.transform.position);
+            if (distance > maxRange)
+            {
+                continue;
+            }
+
             if (distance < bestDistance)
             {
                 bestMissile = missile;
@@ -234,6 +244,35 @@ public class TargetingSystem : MonoBehaviour
         }
 
         return bestMissile;
+    }
+
+    public Ship FindNearestHostileShip(float maxRange)
+    {
+        Ship[] ships = FindObjectsByType<Ship>(FindObjectsSortMode.None);
+        Ship bestShip = null;
+        float bestDistance = float.MaxValue;
+
+        foreach (Ship ship in ships)
+        {
+            if (!IsValidTargetIgnoringRange(ship))
+            {
+                continue;
+            }
+
+            float distance = Vector2.Distance(transform.position, ship.transform.position);
+            if (distance > maxRange)
+            {
+                continue;
+            }
+
+            if (distance < bestDistance)
+            {
+                bestShip = ship;
+                bestDistance = distance;
+            }
+        }
+
+        return bestShip;
     }
 
     public Vector2 GetDirectionToCurrentTarget()
@@ -248,17 +287,27 @@ public class TargetingSystem : MonoBehaviour
 
     private bool IsValidTarget(Ship candidate)
     {
+        if (!IsValidTargetIgnoringRange(candidate))
+        {
+            return false;
+        }
+
+        if (Vector2.Distance(transform.position, candidate.transform.position) > targetingRange)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsValidTargetIgnoringRange(Ship candidate)
+    {
         if (candidate == null || candidate == ownerShip)
         {
             return false;
         }
 
         if (candidate.IsDestroyed || candidate.health != null && candidate.health.IsDead)
-        {
-            return false;
-        }
-
-        if (Vector2.Distance(transform.position, candidate.transform.position) > targetingRange)
         {
             return false;
         }

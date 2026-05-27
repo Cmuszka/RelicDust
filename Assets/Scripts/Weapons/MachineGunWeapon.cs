@@ -7,6 +7,42 @@ public class MachineGunWeapon : WeaponSystem
     [SerializeField] private float spreadAngle = 5f;
     [SerializeField] private bool aimAtSelectedMissile = true;
     [SerializeField] private bool prioritizeNearestHostileMissile = true;
+    [SerializeField] private bool autoFireAtNearbyMissiles = true;
+    [SerializeField] private float pointDefenseRange = 12f;
+    [SerializeField] private bool autoFireAtNearbyShips = true;
+    [SerializeField] private float closeShipAutoFireRange = 8f;
+
+    private MissileProjectile pointDefenseTarget;
+    private Ship closeShipTarget;
+
+    protected override void Update()
+    {
+        base.Update();
+
+        if (ownerShip == null || ownerShip.targeting == null || firePoint == null)
+        {
+            return;
+        }
+
+        if (!autoFireAtNearbyMissiles && !autoFireAtNearbyShips)
+        {
+            return;
+        }
+
+        pointDefenseTarget = GetSelectedMissileAutoFireTarget();
+        closeShipTarget = pointDefenseTarget == null ? GetSelectedShipAutoFireTarget() : null;
+
+        if (pointDefenseTarget == null && closeShipTarget == null || !CanFire())
+        {
+            return;
+        }
+
+        Vector2 targetPosition = pointDefenseTarget != null
+            ? pointDefenseTarget.transform.position
+            : closeShipTarget.transform.position;
+
+        Fire((targetPosition - (Vector2)firePoint.position).normalized);
+    }
 
     public override void Fire(Vector2 direction)
     {
@@ -40,6 +76,16 @@ public class MachineGunWeapon : WeaponSystem
 
     private Vector2 GetFireDirection(Vector2 fallbackDirection)
     {
+        if (pointDefenseTarget != null)
+        {
+            return (pointDefenseTarget.transform.position - firePoint.position).normalized;
+        }
+
+        if (closeShipTarget != null)
+        {
+            return (closeShipTarget.transform.position - firePoint.position).normalized;
+        }
+
         if (aimAtSelectedMissile && ownerShip != null && ownerShip.targeting != null && ownerShip.targeting.HasMissileTarget())
         {
             return ownerShip.targeting.GetDirectionToCurrentTarget();
@@ -47,7 +93,7 @@ public class MachineGunWeapon : WeaponSystem
 
         if (prioritizeNearestHostileMissile && ownerShip != null && ownerShip.targeting != null)
         {
-            MissileProjectile missile = ownerShip.targeting.FindNearestHostileMissile();
+            MissileProjectile missile = ownerShip.targeting.FindNearestHostileMissile(pointDefenseRange);
             if (missile != null)
             {
                 return (missile.transform.position - firePoint.position).normalized;
@@ -55,6 +101,32 @@ public class MachineGunWeapon : WeaponSystem
         }
 
         return fallbackDirection != Vector2.zero ? fallbackDirection.normalized : firePoint.up;
+    }
+
+    private MissileProjectile GetSelectedMissileAutoFireTarget()
+    {
+        if (!autoFireAtNearbyMissiles || !ownerShip.targeting.HasMissileTarget())
+        {
+            return null;
+        }
+
+        MissileProjectile missile = ownerShip.targeting.currentMissileTarget;
+        float distance = Vector2.Distance(firePoint.position, missile.transform.position);
+
+        return distance <= pointDefenseRange ? missile : null;
+    }
+
+    private Ship GetSelectedShipAutoFireTarget()
+    {
+        if (!autoFireAtNearbyShips || !ownerShip.targeting.HasTarget())
+        {
+            return null;
+        }
+
+        Ship ship = ownerShip.targeting.currentTarget;
+        float distance = Vector2.Distance(firePoint.position, ship.transform.position);
+
+        return distance <= closeShipAutoFireRange ? ship : null;
     }
 
     private static Vector2 RotateVector(Vector2 vector, float angleDegrees)
