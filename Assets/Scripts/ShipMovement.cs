@@ -11,6 +11,13 @@ public class ShipMovement : MonoBehaviour
     [SerializeField] private float reverseForce = 2f;
     [SerializeField] private float maxSpeed = 10f;
 
+    [Header("Manual Engine Throttle")]
+    [SerializeField] private bool usePersistentThrottle = true;
+    [SerializeField] private float maxReverseThrottle = 0.35f;
+    [SerializeField] private float throttleIncreasePerSecond = 0.65f;
+    [SerializeField] private float throttleDecreasePerSecond = 0.9f;
+    [SerializeField] private KeyCode cutEngineKey = KeyCode.X;
+
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 270f;
 
@@ -26,6 +33,7 @@ public class ShipMovement : MonoBehaviour
 
     private float thrustInput;
     private float rotationInput;
+    private float engineThrottle;
     private float thrustMultiplier = 1f;
     private float maxSpeedMultiplier = 1f;
 
@@ -55,7 +63,8 @@ public class ShipMovement : MonoBehaviour
             return;
         }
 
-        thrustInput = Input.GetAxisRaw("Vertical");
+        float verticalInput = Input.GetAxisRaw("Vertical");
+        UpdateManualThrottle(verticalInput);
         rotationInput = -Input.GetAxisRaw("Horizontal");
         UpdateAnimator();
     }
@@ -115,11 +124,67 @@ public class ShipMovement : MonoBehaviour
         UpdateAnimator();
     }
 
+    public void SetManualMovementInput(float accelerateInput, float decelerateInput, float newRotationInput)
+    {
+        UpdateManualThrottle(Mathf.Clamp(accelerateInput, -1f, 1f), Mathf.Clamp01(decelerateInput));
+        rotationInput = Mathf.Clamp(newRotationInput, -1f, 1f);
+        UpdateAnimator();
+    }
+
     public void StopMovementInput()
     {
         thrustInput = 0f;
         rotationInput = 0f;
         UpdateAnimator();
+    }
+
+    public void SetReadPlayerInput(bool shouldReadPlayerInput)
+    {
+        readPlayerInput = shouldReadPlayerInput;
+        StopMovementInput();
+    }
+
+    public void CutEngine()
+    {
+        engineThrottle = 0f;
+        thrustInput = 0f;
+        UpdateAnimator();
+    }
+
+    private void UpdateManualThrottle(float verticalInput)
+    {
+        float accelerateInput = Mathf.Max(verticalInput, 0f);
+        float decelerateInput = Mathf.Max(-verticalInput, 0f);
+        UpdateManualThrottle(accelerateInput, decelerateInput);
+    }
+
+    private void UpdateManualThrottle(float accelerateInput, float decelerateInput)
+    {
+        if (!usePersistentThrottle)
+        {
+            thrustInput = accelerateInput > 0f ? accelerateInput : -decelerateInput;
+            engineThrottle = Mathf.Max(thrustInput, 0f);
+            return;
+        }
+
+        if (Input.GetKeyDown(cutEngineKey))
+        {
+            CutEngine();
+            return;
+        }
+
+        if (accelerateInput > 0f)
+        {
+            engineThrottle += throttleIncreasePerSecond * accelerateInput * Time.deltaTime;
+        }
+
+        if (decelerateInput > 0f)
+        {
+            engineThrottle -= throttleDecreasePerSecond * decelerateInput * Time.deltaTime;
+        }
+
+        engineThrottle = Mathf.Clamp(engineThrottle, -Mathf.Abs(maxReverseThrottle), 1f);
+        thrustInput = engineThrottle;
     }
 
     private void UpdateAnimator()

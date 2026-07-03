@@ -16,6 +16,7 @@ public class Ship : MonoBehaviour
     [Header("Core Systems")]
     public ShipMovement movement;
     public ShipHealth health;
+    public ShipEnergy energy;
     public TargetingSystem targeting;
 
     [Header("Loadout")]
@@ -120,6 +121,11 @@ public class Ship : MonoBehaviour
         if (health == null)
         {
             health = GetComponent<ShipHealth>();
+        }
+
+        if (energy == null)
+        {
+            energy = GetComponent<ShipEnergy>();
         }
 
         if (targeting == null)

@@ -47,7 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   utilityName: Shield
   cooldown: 1
+  energyCost: 50
   duration: 1.5
+  temporaryShieldAmount: 100
   shieldVisual: {fileID: 2638070062250332866}
 --- !u!1 &2638070062250332866
 GameObject:

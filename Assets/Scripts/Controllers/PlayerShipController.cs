@@ -15,8 +15,15 @@ public class PlayerShipController : MonoBehaviour
     [SerializeField] private KeyCode clearTargetKey = KeyCode.Escape;
     [SerializeField] private bool numberKeysFireWeapons = true;
 
+    [Header("Movement")]
+    [SerializeField] private bool rotateTowardCursor;
+    [SerializeField] private KeyCode toggleCursorRotationKey = KeyCode.C;
+    [SerializeField] private float cursorRotationDeadZone = 2f;
+    [SerializeField] private float cursorRotationFullInputAngle = 45f;
+
     private Ship ship;
     private PlayerAim playerAim;
+    private ShipMovement movement;
     private Camera mainCamera;
     private bool firedWeaponWithNumberKeyThisFrame;
 
@@ -38,18 +45,21 @@ public class PlayerShipController : MonoBehaviour
     {
         ship = GetComponent<Ship>();
         playerAim = GetComponent<PlayerAim>();
+        movement = GetComponent<ShipMovement>();
         mainCamera = Camera.main;
     }
 
     private void Start()
     {
         ship.RefreshSystems();
+        ApplyMovementMode();
     }
 
     private void Update()
     {
         firedWeaponWithNumberKeyThisFrame = false;
 
+        UpdateMovement();
         UpdateTargeting();
         UpdateWeaponSelection();
 
@@ -67,6 +77,30 @@ public class PlayerShipController : MonoBehaviour
         {
             ActivateUtility(secondaryUtilityIndex);
         }
+    }
+
+    private void UpdateMovement()
+    {
+        if (movement == null)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(toggleCursorRotationKey))
+        {
+            rotateTowardCursor = !rotateTowardCursor;
+            ApplyMovementMode();
+        }
+
+        if (!rotateTowardCursor)
+        {
+            return;
+        }
+
+        float verticalInput = Input.GetAxisRaw("Vertical");
+        float accelerateInput = Mathf.Max(verticalInput, 0f);
+        float decelerateInput = Mathf.Max(-verticalInput, 0f);
+        movement.SetManualMovementInput(accelerateInput, decelerateInput, GetCursorRotationInput());
     }
 
     private void UpdateWeaponSelection()
@@ -178,5 +212,42 @@ public class PlayerShipController : MonoBehaviour
         }
 
         return transform.up;
+    }
+
+    private void ApplyMovementMode()
+    {
+        if (movement != null)
+        {
+            movement.SetReadPlayerInput(!rotateTowardCursor);
+        }
+    }
+
+    private float GetCursorRotationInput()
+    {
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
+        if (mainCamera == null)
+        {
+            return 0f;
+        }
+
+        Vector3 mouseWorldPosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 directionToCursor = mouseWorldPosition - transform.position;
+        if (directionToCursor == Vector2.zero)
+        {
+            return 0f;
+        }
+
+        float signedAngle = Vector2.SignedAngle(transform.up, directionToCursor.normalized);
+        if (Mathf.Abs(signedAngle) <= cursorRotationDeadZone)
+        {
+            return 0f;
+        }
+
+        float fullInputAngle = Mathf.Max(cursorRotationFullInputAngle, cursorRotationDeadZone);
+        return Mathf.Clamp(signedAngle / fullInputAngle, -1f, 1f);
     }
 }

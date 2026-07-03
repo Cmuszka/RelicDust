@@ -48,6 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   utilityName: Afterburner
   cooldown: 1
+  energyCost: 30
   boostImpulse: 10
   clearExistingVelocity: 0
   afterburnerVisual: {fileID: 437082365420387753}

@@ -33,7 +33,9 @@ public abstract class WeaponSystem : MonoBehaviour
 
     public virtual bool CanFire()
     {
-        return fireCooldown <= 0f && (ownerShip == null || !ownerShip.IsDestroyed);
+        return fireCooldown <= 0f
+            && (ownerShip == null || !ownerShip.IsDestroyed)
+            && (ownerShip == null || ownerShip.energy == null || ownerShip.energy.CanSpendEnergy(energyCost));
     }
 
     public virtual void Fire(Vector2 direction)
@@ -48,6 +50,11 @@ public abstract class WeaponSystem : MonoBehaviour
 
     protected void StartCooldown()
     {
+        if (ownerShip != null && ownerShip.energy != null)
+        {
+            ownerShip.energy.SpendEnergy(energyCost);
+        }
+
         if (fireRate > 0f)
         {
             fireCooldown = 1f / fireRate;
