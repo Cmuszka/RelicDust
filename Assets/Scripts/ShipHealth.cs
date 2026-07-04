@@ -49,6 +49,28 @@ public class ShipHealth : MonoBehaviour
         }
     }
 
+    public void TakeDamage(float damage, bool bypassShields)
+    {
+        if (!bypassShields)
+        {
+            TakeDamage(damage);
+            return;
+        }
+
+        if (damage <= 0f || IsDead)
+        {
+            return;
+        }
+
+        damage = ApplyDamageToLayer(damage, ref currentArmorHealth);
+        ApplyDamageToLayer(damage, ref currentHullStrength);
+
+        if (IsDead)
+        {
+            Die();
+        }
+    }
+
     public void RepairHull(float amount)
     {
         currentHullStrength = RestoreHealth(currentHullStrength, hullStrength, amount);

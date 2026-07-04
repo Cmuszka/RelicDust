@@ -23,6 +23,7 @@ public class ShipMovement : MonoBehaviour
 
     [Header("Drag")]
     [SerializeField] private float linearDrag = 0f;
+    [SerializeField] private float engineCutLinearDrag = 2f;
     [SerializeField] private float angularDrag = 3f;
 
     [Header("Animation")]
@@ -36,6 +37,7 @@ public class ShipMovement : MonoBehaviour
     private float engineThrottle;
     private float thrustMultiplier = 1f;
     private float maxSpeedMultiplier = 1f;
+    private const float EngineOnThreshold = 0.01f;
 
     private void Awake()
     {
@@ -73,6 +75,7 @@ public class ShipMovement : MonoBehaviour
     {
         HandleRotation();
         HandleMovement();
+        UpdateLinearDrag();
         ClampVelocity();
     }
 
@@ -148,6 +151,7 @@ public class ShipMovement : MonoBehaviour
     {
         engineThrottle = 0f;
         thrustInput = 0f;
+        UpdateLinearDrag();
         UpdateAnimator();
     }
 
@@ -193,5 +197,16 @@ public class ShipMovement : MonoBehaviour
         {
             animator.SetBool(engineOnParameter, thrustInput > 0f);
         }
+    }
+
+    private void UpdateLinearDrag()
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        bool engineIsOn = Mathf.Abs(thrustInput) > EngineOnThreshold;
+        rb.linearDamping = engineIsOn ? linearDrag : engineCutLinearDrag;
     }
 }

@@ -11,6 +11,7 @@ public class MachineGunWeapon : WeaponSystem
     [SerializeField] private float pointDefenseRange = 12f;
     [SerializeField] private bool autoFireAtNearbyShips = true;
     [SerializeField] private float closeShipAutoFireRange = 8f;
+    [SerializeField] private bool leadAutoFireTargets = true;
 
     private MissileProjectile pointDefenseTarget;
     private Ship closeShipTarget;
@@ -37,9 +38,7 @@ public class MachineGunWeapon : WeaponSystem
             return;
         }
 
-        Vector2 targetPosition = pointDefenseTarget != null
-            ? pointDefenseTarget.transform.position
-            : closeShipTarget.transform.position;
+        Vector2 targetPosition = GetAutoFireAimPoint();
 
         Fire((targetPosition - (Vector2)firePoint.position).normalized);
     }
@@ -78,12 +77,16 @@ public class MachineGunWeapon : WeaponSystem
     {
         if (pointDefenseTarget != null)
         {
-            return (pointDefenseTarget.transform.position - firePoint.position).normalized;
+            return (GetPredictedAimPoint(
+                pointDefenseTarget.transform.position,
+                GetTargetVelocity(pointDefenseTarget.gameObject)) - (Vector2)firePoint.position).normalized;
         }
 
         if (closeShipTarget != null)
         {
-            return (closeShipTarget.transform.position - firePoint.position).normalized;
+            return (GetPredictedAimPoint(
+                closeShipTarget.transform.position,
+                GetTargetVelocity(closeShipTarget.gameObject)) - (Vector2)firePoint.position).normalized;
         }
 
         if (aimAtSelectedMissile && ownerShip != null && ownerShip.targeting != null && ownerShip.targeting.HasMissileTarget())
@@ -101,6 +104,60 @@ public class MachineGunWeapon : WeaponSystem
         }
 
         return fallbackDirection != Vector2.zero ? fallbackDirection.normalized : firePoint.up;
+    }
+
+    private Vector2 GetAutoFireAimPoint()
+    {
+        if (pointDefenseTarget != null)
+        {
+            return GetPredictedAimPoint(
+                pointDefenseTarget.transform.position,
+                GetTargetVelocity(pointDefenseTarget.gameObject));
+        }
+
+        if (closeShipTarget != null)
+        {
+            return GetPredictedAimPoint(
+                closeShipTarget.transform.position,
+                GetTargetVelocity(closeShipTarget.gameObject));
+        }
+
+        return firePoint.position;
+    }
+
+    private Vector2 GetPredictedAimPoint(Vector2 targetPosition, Vector2 targetVelocity)
+    {
+        if (!leadAutoFireTargets)
+        {
+            return targetPosition;
+        }
+
+        float projectileSpeed = GetProjectileSpeed();
+        if (projectileSpeed <= 0f)
+        {
+            return targetPosition;
+        }
+
+        float distance = Vector2.Distance(firePoint.position, targetPosition);
+        float travelTime = distance / projectileSpeed;
+        return targetPosition + targetVelocity * travelTime;
+    }
+
+    private float GetProjectileSpeed()
+    {
+        if (projectilePrefab == null)
+        {
+            return 0f;
+        }
+
+        Bullet bullet = projectilePrefab.GetComponent<Bullet>();
+        return bullet != null ? bullet.Speed : 0f;
+    }
+
+    private static Vector2 GetTargetVelocity(GameObject targetObject)
+    {
+        Rigidbody2D targetBody = targetObject != null ? targetObject.GetComponent<Rigidbody2D>() : null;
+        return targetBody != null ? targetBody.linearVelocity : Vector2.zero;
     }
 
     private MissileProjectile GetSelectedMissileAutoFireTarget()

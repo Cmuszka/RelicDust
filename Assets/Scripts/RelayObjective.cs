@@ -1,12 +1,14 @@
 using UnityEngine;
 
-public class RelayObjective : MonoBehaviour
+public class RelayObjective : MonoBehaviour, IDamageable
 {
     [SerializeField] private float activationRadius = 5f;
     [SerializeField] private float uploadDuration = 30f;
     [SerializeField] private bool requirePlayerInRadius = true;
 
     [Header("Optional Integrity")]
+    [SerializeField] private ShipTeam protectedTeam = ShipTeam.Player;
+    [SerializeField] private bool ignoreNeutralDamage;
     [SerializeField] private bool useIntegrity;
     [SerializeField] private float maxIntegrity = 100f;
     [SerializeField] private float currentIntegrity = 100f;
@@ -68,6 +70,16 @@ public class RelayObjective : MonoBehaviour
         currentIntegrity = maxIntegrity;
         IsUploading = false;
         IsComplete = false;
+    }
+
+    public bool ShouldIgnoreDamageFrom(Ship sourceShip, ShipTeam sourceTeam)
+    {
+        if (sourceShip == null)
+        {
+            return ignoreNeutralDamage && sourceTeam == ShipTeam.Neutral;
+        }
+
+        return sourceTeam == protectedTeam;
     }
 
     public void TakeDamage(float damage)

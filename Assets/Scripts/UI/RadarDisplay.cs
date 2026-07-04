@@ -7,6 +7,7 @@ public class RadarDisplay : MonoBehaviour
     [SerializeField] private RectTransform radarRoot;
     [SerializeField] private RadarBlip blipPrefab;
     [SerializeField] private Transform player;
+    [SerializeField] private MissionManager missionManager;
     [SerializeField] private bool findPlayerOnStart = true;
 
     [Header("Range")]
@@ -18,9 +19,14 @@ public class RadarDisplay : MonoBehaviour
     [SerializeField] private Color missileColor = new Color(1f, 0.65f, 0.1f);
     [SerializeField] private Color selectedTargetColor = Color.cyan;
     [SerializeField] private Color selectedMissileColor = Color.yellow;
+    [SerializeField] private Color objectiveColor = Color.green;
 
     [Header("Selection")]
     [SerializeField] private float selectedBlipScale = 1.6f;
+
+    [Header("Objective")]
+    [SerializeField] private bool showObjective = true;
+    [SerializeField] private float objectiveBlipScale = 1.8f;
 
     private readonly List<RadarBlip> activeBlips = new List<RadarBlip>();
     private readonly Queue<RadarBlip> pooledBlips = new Queue<RadarBlip>();
@@ -52,6 +58,11 @@ public class RadarDisplay : MonoBehaviour
         {
             SetPlayer(player);
         }
+
+        if (missionManager == null)
+        {
+            missionManager = FindFirstObjectByType<MissionManager>();
+        }
     }
 
     private void LateUpdate()
@@ -63,6 +74,7 @@ public class RadarDisplay : MonoBehaviour
         }
 
         BeginRefresh();
+        DrawObjective();
         DrawShips();
         DrawMissiles();
     }
@@ -118,7 +130,28 @@ public class RadarDisplay : MonoBehaviour
         }
     }
 
+    private void DrawObjective()
+    {
+        if (!showObjective || missionManager == null)
+        {
+            return;
+        }
+
+        Transform objectiveTarget = missionManager.ObjectiveTarget;
+        if (objectiveTarget == null)
+        {
+            return;
+        }
+
+        DrawBlip(objectiveTarget.position, objectiveColor, false, objectiveBlipScale);
+    }
+
     private void DrawBlip(Vector3 worldPosition, Color color, bool isSelected)
+    {
+        DrawBlip(worldPosition, color, isSelected, isSelected ? selectedBlipScale : 1f);
+    }
+
+    private void DrawBlip(Vector3 worldPosition, Color color, bool isSelected, float blipScale)
     {
         Vector2 radarPosition;
         if (!TryGetRadarPosition(worldPosition, out radarPosition))
@@ -128,7 +161,7 @@ public class RadarDisplay : MonoBehaviour
 
         RadarBlip blip = GetBlip();
         blip.RectTransform.anchoredPosition = radarPosition;
-        blip.RectTransform.localScale = isSelected ? Vector3.one * selectedBlipScale : Vector3.one;
+        blip.RectTransform.localScale = Vector3.one * blipScale;
         blip.SetColor(color);
         blip.gameObject.SetActive(true);
         activeBlips.Add(blip);

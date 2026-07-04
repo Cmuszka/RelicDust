@@ -690,11 +690,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.0094957
+      value: 9.26
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.582446
+      value: -0.13
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1525,7 +1525,7 @@ Transform:
   m_GameObject: {fileID: 577306034}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 8.38, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1768,6 +1768,7 @@ MonoBehaviour:
   radarRoot: {fileID: 699341478}
   blipPrefab: {fileID: -8359580608031052567, guid: bd1d8c0664de9c84c8c0e41dd6d3c735, type: 3}
   player: {fileID: 1787086783}
+  missionManager: {fileID: 1822097800}
   findPlayerOnStart: 1
   worldRange: 40
   clampToEdge: 1
@@ -1775,7 +1776,10 @@ MonoBehaviour:
   missileColor: {r: 1, g: 0.65, b: 0.1, a: 1}
   selectedTargetColor: {r: 1, g: 0, b: 0.952302, a: 1}
   selectedMissileColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  objectiveColor: {r: 0, g: 1, b: 0.9013953, a: 1}
   selectedBlipScale: 1.2
+  showObjective: 1
+  objectiveBlipScale: 1.8
 --- !u!114 &699341480
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1981,7 +1985,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 7.6805153, y: 0.6240499}
+  m_Offset: {x: 7.6805153, y: 4.3025675}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -1991,7 +1995,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.56116486, y: 16.326694}
+  m_Size: {x: 0.56116486, y: 23.683725}
   m_EdgeRadius: 0
 --- !u!1 &823523204
 GameObject:
@@ -2060,7 +2064,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 7.6805153, y: 1.0939026}
+  m_Offset: {x: 7.6805153, y: 4.970767}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -2070,7 +2074,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.56116486, y: 15.537342}
+  m_Size: {x: 0.56116486, y: 23.291082}
   m_EdgeRadius: 0
 --- !u!1 &836271610
 GameObject:
@@ -2464,11 +2468,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.7473373
+      value: 33.16
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -20.905516
+      value: 12.19
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2556,11 +2560,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 14.902113
+      value: 11.79
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.2592626
+      value: 10.6
       objectReference: {fileID: 0}
     - target: {fileID: 2650987809261341356, guid: a3daeb165a62dfb4e90eabe32a7889b5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2739,6 +2743,8 @@ GameObject:
   - component: {fileID: 1288159582}
   - component: {fileID: 1288159581}
   - component: {fileID: 1288159580}
+  - component: {fileID: 1288159583}
+  - component: {fileID: 1288159585}
   m_Layer: 0
   m_Name: RelayObjective
   m_TagString: Untagged
@@ -2761,9 +2767,11 @@ MonoBehaviour:
   activationRadius: 5
   uploadDuration: 30
   requirePlayerInRadius: 1
-  useIntegrity: 0
-  maxIntegrity: 100
-  currentIntegrity: 100
+  protectedTeam: 1
+  ignoreNeutralDamage: 0
+  useIntegrity: 1
+  maxIntegrity: 300
+  currentIntegrity: 300
 --- !u!212 &1288159581
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2834,6 +2842,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &1288159583
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288159579}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.70274514, y: 1}
+    newSize: {x: 0.70274514, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.70274514, y: 1}
+  m_EdgeRadius: 0
+--- !u!50 &1288159585
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288159579}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!1 &1357819768
 GameObject:
   m_ObjectHideFlags: 0
@@ -2914,6 +2995,37 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1366899349
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1366899350}
+  m_Layer: 0
+  m_Name: SpawnPoint (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1366899350
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366899349}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -21.05, y: 16.02, z: -2.4947243}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1402527001
 GameObject:
   m_ObjectHideFlags: 0
@@ -3455,6 +3567,37 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!1 &1545318196
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1545318197}
+  m_Layer: 0
+  m_Name: SpawnPoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1545318197
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545318196}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.51, y: 30.94, z: -2.4947243}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1646115553
 GameObject:
   m_ObjectHideFlags: 0
@@ -3847,7 +3990,7 @@ MonoBehaviour:
   extractionZone: {fileID: 1711064973}
   findPlayerOnStart: 1
   startOnStart: 1
-  escalationUploadProgress: 0.55
+  escalationUploadProgress: 0.58
   approachRelayText: Reach the damaged relay.
   activateRelayText: Activate the relay.
   defendRelayText: Defend the relay while data uploads.
@@ -3862,7 +4005,9 @@ MonoBehaviour:
       count: 3
       spawnPoints:
       - {fileID: 393586330}
-      spawnRadius: 0
+      - {fileID: 1366899350}
+      - {fileID: 1545318197}
+      spawnRadius: 5
       delayBetweenSpawns: 0
   relayDefenseWave:
     waveName: Reinforcements
@@ -3870,8 +4015,8 @@ MonoBehaviour:
     - enemyPrefab: {fileID: 6218820717555389854, guid: 5b0359b0845d8a94d933d0868f48ae79, type: 3}
       count: 1
       spawnPoints:
-      - {fileID: 393586330}
-      spawnRadius: 0
+      - {fileID: 1545318197}
+      spawnRadius: 10
       delayBetweenSpawns: 0
   escalationWave:
     waveName: Heavy Patrol
@@ -3879,22 +4024,23 @@ MonoBehaviour:
     - enemyPrefab: {fileID: 6218820717555389854, guid: ea0140d0398a243429ec9fc4b87c2f04, type: 3}
       count: 1
       spawnPoints:
-      - {fileID: 393586330}
+      - {fileID: 1545318197}
       spawnRadius: 0
       delayBetweenSpawns: 0
     - enemyPrefab: {fileID: 6218820717555389854, guid: 242518510a0db0d42b825b3677afbe80, type: 3}
       count: 1
       spawnPoints:
-      - {fileID: 393586330}
+      - {fileID: 1545318197}
       spawnRadius: 0
-      delayBetweenSpawns: 0
+      delayBetweenSpawns: 5
   extractionWave:
     waveName: Marauder Fleet
     groups:
     - enemyPrefab: {fileID: 6218820717555389854, guid: ea0140d0398a243429ec9fc4b87c2f04, type: 3}
       count: 3
       spawnPoints:
-      - {fileID: 393586330}
+      - {fileID: 1366899350}
+      - {fileID: 1545318197}
       spawnRadius: 0
       delayBetweenSpawns: 0
   salvageReward: 42
@@ -4908,6 +5054,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7349336506980014401, guid: e3cd8fa989b1dc24590c43bbf25abbce, type: 3}
       insertIndex: -1
       addedObject: {fileID: 615622587128382387}
+    - targetCorrespondingSourceObject: {fileID: 7349336506980014401, guid: e3cd8fa989b1dc24590c43bbf25abbce, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 615622587128382394}
   m_SourcePrefab: {fileID: 100100000, guid: e3cd8fa989b1dc24590c43bbf25abbce, type: 3}
 --- !u!114 &615622587128382385 stripped
 MonoBehaviour:
@@ -4936,6 +5085,29 @@ MonoBehaviour:
   regenPerSecond: 18
   currentEnergy: 0
   startFull: 1
+--- !u!114 &615622587128382394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93988688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c63f72fa814434840995b804f962f626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeImpactSpeed: 6
+  damageMultiplier: 2
+  damageExponent: 1.25
+  maxDamage: 50
+  damageCooldown: 0.4
+  bypassShields: 1
+  damageLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  useTagFilter: 0
+  damageTags: []
 --- !u!1001 &6470404183633828080
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5014,3 +5186,5 @@ SceneRoots:
   - {fileID: 1288159582}
   - {fileID: 1711064975}
   - {fileID: 393586330}
+  - {fileID: 1366899350}
+  - {fileID: 1545318197}

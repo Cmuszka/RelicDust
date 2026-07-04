@@ -58,6 +58,15 @@ public class EnemyBullet : MonoBehaviour
             shipHealth.TakeDamage(damage);
             hasHit = true;
             Destroy(gameObject);
+            return;
+        }
+
+        IDamageable damageable = DamageableLookup.FindInParent(other);
+        if (damageable != null)
+        {
+            damageable.TakeDamage(damage);
+            hasHit = true;
+            Destroy(gameObject);
         }
     }
 }

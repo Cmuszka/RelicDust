@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 9119078527566175791}
   - component: {fileID: 5419096797536791860}
   - component: {fileID: 3898588205971747994}
+  - component: {fileID: -2032602661572224973}
   m_Layer: 0
   m_Name: TurretEnemyShip
   m_TagString: Untagged
@@ -57,6 +58,7 @@ MonoBehaviour:
   isDestroyed: 0
   movement: {fileID: 4964449074751357005}
   health: {fileID: 3975787924802757618}
+  energy: {fileID: 0}
   targeting: {fileID: 9119078527566175791}
   weapons: []
   utilities: []
@@ -126,8 +128,14 @@ MonoBehaviour:
   thrustForce: 0
   reverseForce: 0
   maxSpeed: 0
+  usePersistentThrottle: 0
+  maxReverseThrottle: 0.35
+  throttleIncreasePerSecond: 0.65
+  throttleDecreasePerSecond: 0.9
+  cutEngineKey: 120
   rotationSpeed: 270
   linearDrag: 0
+  engineCutLinearDrag: 2
   angularDrag: 3
   animator: {fileID: 0}
   engineOnParameter: EngineOn
@@ -231,6 +239,29 @@ MonoBehaviour:
   aimDeadZone: 3
   firingArc: 8
   weaponIndex: 0
+--- !u!114 &-2032602661572224973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6218820717555389854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c63f72fa814434840995b804f962f626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeImpactSpeed: 4
+  damageMultiplier: 4
+  damageExponent: 1.25
+  maxDamage: 50
+  damageCooldown: 0.4
+  bypassShields: 1
+  damageLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  useTagFilter: 0
+  damageTags: []
 --- !u!1 &8176216516240306621
 GameObject:
   m_ObjectHideFlags: 0

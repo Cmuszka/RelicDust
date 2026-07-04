@@ -64,6 +64,7 @@ MonoBehaviour:
   isDestroyed: 0
   movement: {fileID: 9084184414428392861}
   health: {fileID: 8067471513082010412}
+  energy: {fileID: 0}
   targeting: {fileID: 4616072282255399320}
   weapons: []
   utilities: []
@@ -142,6 +143,10 @@ MonoBehaviour:
   selectTargetUnderCursorKey: 325
   clearTargetKey: 27
   numberKeysFireWeapons: 1
+  rotateTowardCursor: 0
+  toggleCursorRotationKey: 99
+  cursorRotationDeadZone: 2
+  cursorRotationFullInputAngle: 45
 --- !u!50 &658193402333090179
 Rigidbody2D:
   serializedVersion: 5
@@ -185,8 +190,14 @@ MonoBehaviour:
   thrustForce: 12
   reverseForce: 6
   maxSpeed: 15
+  usePersistentThrottle: 1
+  maxReverseThrottle: 0.35
+  throttleIncreasePerSecond: 0.65
+  throttleDecreasePerSecond: 0.9
+  cutEngineKey: 120
   rotationSpeed: 270
   linearDrag: 0
+  engineCutLinearDrag: 2
   angularDrag: 3
   animator: {fileID: 4284890875198044951}
   engineOnParameter: EngineOn
@@ -673,7 +684,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2581007746840152214, guid: 992839943a5953542ab69970575d42a3, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 6531702232594558947, guid: 992839943a5953542ab69970575d42a3, type: 3}
       insertIndex: -1

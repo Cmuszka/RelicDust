@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2835182032731077461}
   - component: {fileID: 8873464572168960097}
   - component: {fileID: 3337960690335185854}
+  - component: {fileID: -8865415364068233291}
   m_Layer: 0
   m_Name: Asteroid 01 - Base_0
   m_TagString: Untagged
@@ -172,3 +173,24 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-8865415364068233291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259766078042923055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bedaf9a105165a459a0fef5d73e833a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hullStrength: 100
+  armorHealth: 50
+  shieldHealth: 25
+  currentHullStrength: 0
+  currentArmorHealth: 0
+  currentShieldHealth: 0
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []

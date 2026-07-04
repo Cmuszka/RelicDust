@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 5419096797536791860}
   - component: {fileID: 5527472929537249359}
   - component: {fileID: -3068624709819539819}
+  - component: {fileID: -4348822802450872576}
   m_Layer: 0
   m_Name: CarrierEnemyShip
   m_TagString: Untagged
@@ -90,6 +91,7 @@ MonoBehaviour:
   isDestroyed: 0
   movement: {fileID: 4964449074751357005}
   health: {fileID: 3975787924802757618}
+  energy: {fileID: 0}
   targeting: {fileID: 9119078527566175791}
   weapons: []
   utilities: []
@@ -159,8 +161,14 @@ MonoBehaviour:
   thrustForce: 3
   reverseForce: 2
   maxSpeed: 6
+  usePersistentThrottle: 0
+  maxReverseThrottle: 0.35
+  throttleIncreasePerSecond: 0.65
+  throttleDecreasePerSecond: 0.9
+  cutEngineKey: 120
   rotationSpeed: 180
   linearDrag: 0
+  engineCutLinearDrag: 2
   angularDrag: 3
   animator: {fileID: 0}
   engineOnParameter: EngineOn
@@ -265,7 +273,7 @@ MonoBehaviour:
   aimDeadZone: 5
   spawnPrefab: {fileID: 6218820717555389854, guid: 6bb6d0e406f68184cad3320725d51b57, type: 3}
   spawnPoint: {fileID: 1102761978034759833}
-  spawnInterval: 12
+  spawnInterval: 20
   supportWeaponIndex: 0
 --- !u!114 &-3068624709819539819
 MonoBehaviour:
@@ -303,6 +311,29 @@ MonoBehaviour:
   maxBounds: {x: 0, y: 0}
   boundsAvoidanceMargin: 5
   boundsAvoidanceWeight: 2
+--- !u!114 &-4348822802450872576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6218820717555389854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c63f72fa814434840995b804f962f626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeImpactSpeed: 4
+  damageMultiplier: 4
+  damageExponent: 1.25
+  maxDamage: 50
+  damageCooldown: 0.4
+  bypassShields: 1
+  damageLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  useTagFilter: 0
+  damageTags: []
 --- !u!1 &8176216516240306621
 GameObject:
   m_ObjectHideFlags: 0

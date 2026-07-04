@@ -1,24 +1,15 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class MissileProjectile : MonoBehaviour
+public class MissileProjectile : Projectile
 {
     [SerializeField] private float speed = 8f;
     [SerializeField] private float turnSpeed = 240f;
-    [SerializeField] private float lifetime = 6f;
-    [SerializeField] private float damage = 8f;
-    [SerializeField] private bool canHitNeutralShips;
 
     private Rigidbody2D rb;
-    private Ship ownerShip;
     private Ship targetShip;
     private MissileProjectile targetMissile;
-    private ShipTeam ownerTeam = ShipTeam.Neutral;
     private Vector2 direction;
-    private bool hasHit;
-
-    public ShipTeam Team => ownerTeam;
-    public Ship OwnerShip => ownerShip;
 
     private void Awake()
     {
@@ -28,23 +19,17 @@ public class MissileProjectile : MonoBehaviour
     public void Initialize(Vector2 launchDirection, Ship newOwnerShip, Ship newTargetShip)
     {
         direction = launchDirection != Vector2.zero ? launchDirection.normalized : transform.up;
-        ownerShip = newOwnerShip;
+        InitializeOwner(newOwnerShip);
         targetShip = newTargetShip;
         targetMissile = null;
-        ownerTeam = ownerShip != null ? ownerShip.Team : ShipTeam.Neutral;
-
-        Destroy(gameObject, lifetime);
     }
 
     public void Initialize(Vector2 launchDirection, Ship newOwnerShip, MissileProjectile newTargetMissile)
     {
         direction = launchDirection != Vector2.zero ? launchDirection.normalized : transform.up;
-        ownerShip = newOwnerShip;
+        InitializeOwner(newOwnerShip);
         targetShip = null;
         targetMissile = newTargetMissile;
-        ownerTeam = ownerShip != null ? ownerShip.Team : ShipTeam.Neutral;
-
-        Destroy(gameObject, lifetime);
     }
 
     private void FixedUpdate()
@@ -101,19 +86,18 @@ public class MissileProjectile : MonoBehaviour
         ShipHealth shipHealth = other.GetComponentInParent<ShipHealth>();
         if (shipHealth != null)
         {
-            shipHealth.TakeDamage(damage);
-            hasHit = true;
-            Destroy(gameObject);
+            TryDamageShipHealth(other);
             return;
         }
 
         EnemyHealth enemyHealth = other.GetComponentInParent<EnemyHealth>();
         if (enemyHealth != null)
         {
-            enemyHealth.TakeDamage(Mathf.RoundToInt(damage));
-            hasHit = true;
-            Destroy(gameObject);
+            TryDamageEnemyHealth(other);
+            return;
         }
+
+        TryDamageable(other);
     }
 
     public void DestroyMissile()
@@ -125,30 +109,5 @@ public class MissileProjectile : MonoBehaviour
 
         hasHit = true;
         Destroy(gameObject);
-    }
-
-    private bool ShouldIgnoreShip(Ship hitShip)
-    {
-        if (hitShip == null)
-        {
-            return false;
-        }
-
-        if (hitShip == ownerShip)
-        {
-            return true;
-        }
-
-        if (ownerShip == null)
-        {
-            return false;
-        }
-
-        if (hitShip.Team == ShipTeam.Neutral)
-        {
-            return !canHitNeutralShips;
-        }
-
-        return hitShip.Team == ownerTeam;
     }
 }

@@ -28,9 +28,24 @@ public class TargetingSystem : MonoBehaviour
         currentTarget = target;
     }
 
+    public void SetTargetIgnoringRange(Ship target)
+    {
+        if (target != null && !IsValidTargetIgnoringRange(target))
+        {
+            return;
+        }
+
+        currentTarget = target;
+    }
+
     public bool HasTarget()
     {
         return currentTarget != null && IsValidTarget(currentTarget);
+    }
+
+    public bool HasAssignedTarget()
+    {
+        return currentTarget != null && IsValidTargetIgnoringRange(currentTarget);
     }
 
     public bool HasMissileTarget()

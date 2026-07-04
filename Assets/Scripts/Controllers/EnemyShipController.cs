@@ -59,7 +59,7 @@ public class EnemyShipController : MonoBehaviour
         }
 
         targetRefreshTimer -= Time.deltaTime;
-        if (targetRefreshTimer > 0f && ship.targeting != null && ship.targeting.HasTarget())
+        if (targetRefreshTimer > 0f && ship.targeting != null && ship.targeting.HasAssignedTarget())
         {
             return;
         }
@@ -77,7 +77,7 @@ public class EnemyShipController : MonoBehaviour
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         Ship playerShip = playerObject != null ? playerObject.GetComponent<Ship>() : null;
-        ship.targeting.SetTarget(playerShip);
+        ship.targeting.SetTargetIgnoringRange(playerShip);
     }
 
     private void HandleMovement()
@@ -172,7 +172,7 @@ public class EnemyShipController : MonoBehaviour
 
     private bool HasValidTarget()
     {
-        if (ship.targeting == null || !ship.targeting.HasTarget())
+        if (ship.targeting == null || !ship.targeting.HasAssignedTarget())
         {
             return false;
         }

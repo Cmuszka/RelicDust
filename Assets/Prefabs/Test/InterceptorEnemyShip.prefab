@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: 5419096797536791860}
   - component: {fileID: 1799724244967247585}
   - component: {fileID: -5870686928209442470}
+  - component: {fileID: -1738003769746839998}
   m_Layer: 0
   m_Name: InterceptorEnemyShip
   m_TagString: Untagged
@@ -58,6 +59,7 @@ MonoBehaviour:
   isDestroyed: 0
   movement: {fileID: 4964449074751357005}
   health: {fileID: 3975787924802757618}
+  energy: {fileID: 0}
   targeting: {fileID: 9119078527566175791}
   weapons: []
   utilities: []
@@ -124,11 +126,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   readPlayerInput: 0
-  thrustForce: 4
-  reverseForce: 2
-  maxSpeed: 10
+  thrustForce: 6
+  reverseForce: 6
+  maxSpeed: 8
+  usePersistentThrottle: 0
+  maxReverseThrottle: 0.35
+  throttleIncreasePerSecond: 0.65
+  throttleDecreasePerSecond: 0.9
+  cutEngineKey: 120
   rotationSpeed: 270
   linearDrag: 0
+  engineCutLinearDrag: 2
   angularDrag: 3
   animator: {fileID: 0}
   engineOnParameter: EngineOn
@@ -229,8 +237,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   acquirePlayerOnStart: 1
   targetRefreshInterval: 1
+  engageRange: 16
   attackRange: 5
-  overshootRange: 1.5
+  passRange: 2
+  disengageDistance: 10
+  repositionDistance: 13
+  repositionSideOffset: 5
+  approachSpeedMatchDistance: 6
+  approachSpeedSlowdownStrength: 0.35
   aimDeadZone: 5
   firingArc: 18
   weaponIndex: 0
@@ -254,13 +268,13 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 1024
-  obstacleCheckDistance: 4
+  obstacleCheckDistance: 1
   obstacleCheckRadius: 0.6
   obstacleFeelAngle: 35
   obstacleAvoidanceWeight: 1.5
   useVelocityPrediction: 1
-  predictionTime: 0.75
-  maxPredictionDistance: 8
+  predictionTime: 0.7
+  maxPredictionDistance: 4
   velocityAvoidanceWeight: 2
   useAllySeparation: 1
   separationRadius: 3
@@ -270,6 +284,29 @@ MonoBehaviour:
   maxBounds: {x: 0, y: 0}
   boundsAvoidanceMargin: 5
   boundsAvoidanceWeight: 2
+--- !u!114 &-1738003769746839998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6218820717555389854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c63f72fa814434840995b804f962f626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeImpactSpeed: 4
+  damageMultiplier: 4
+  damageExponent: 1.25
+  maxDamage: 50
+  damageCooldown: 0.4
+  bypassShields: 1
+  damageLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  useTagFilter: 0
+  damageTags: []
 --- !u!1 &8176216516240306621
 GameObject:
   m_ObjectHideFlags: 0

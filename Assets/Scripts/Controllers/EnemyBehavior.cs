@@ -45,7 +45,7 @@ public abstract class EnemyBehavior : MonoBehaviour
         }
 
         targetRefreshTimer -= Time.deltaTime;
-        if (targetRefreshTimer > 0f && ship.targeting != null && ship.targeting.HasTarget())
+        if (targetRefreshTimer > 0f && ship.targeting != null && ship.targeting.HasAssignedTarget())
         {
             return;
         }
@@ -63,12 +63,12 @@ public abstract class EnemyBehavior : MonoBehaviour
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         Ship playerShip = playerObject != null ? playerObject.GetComponent<Ship>() : null;
-        ship.targeting.SetTarget(playerShip);
+        ship.targeting.SetTargetIgnoringRange(playerShip);
     }
 
     protected bool HasValidTarget()
     {
-        if (ship.targeting == null || !ship.targeting.HasTarget())
+        if (ship.targeting == null || !ship.targeting.HasAssignedTarget())
         {
             return false;
         }
@@ -85,6 +85,15 @@ public abstract class EnemyBehavior : MonoBehaviour
     protected float GetDistanceToTarget()
     {
         return Vector2.Distance(transform.position, ship.targeting.currentTarget.transform.position);
+    }
+
+    protected Vector2 GetTargetVelocity()
+    {
+        Rigidbody2D targetBody = ship.targeting.currentTarget != null
+            ? ship.targeting.currentTarget.GetComponent<Rigidbody2D>()
+            : null;
+
+        return targetBody != null ? targetBody.linearVelocity : Vector2.zero;
     }
 
     protected float GetRotationInputToward(Vector2 desiredDirection, float aimDeadZone)
