@@ -25,6 +25,12 @@ public class EnemyStrafeController : EnemyBehavior
 
         Vector2 toTarget = GetDirectionToTarget();
         float distance = GetDistanceToTarget();
+
+        if (!isAttacking && IsWeaponReloading(weaponIndex) && TryMoveToCover())
+        {
+            return;
+        }
+
         Vector2 moveDirection = GetMoveDirection(toTarget, distance);
         Vector2 facingDirection = isAttacking ? toTarget : moveDirection;
 
@@ -46,7 +52,7 @@ public class EnemyStrafeController : EnemyBehavior
             SetMovement(thrustInput, rotationInput);
         }
 
-        if (isAttacking && IsFacing(toTarget, firingArc))
+        if (isAttacking && CanFireAtTarget(toTarget, firingArc))
         {
             TryFireWeapon(weaponIndex, toTarget);
         }

@@ -24,6 +24,12 @@ public class EnemyCarrierController : EnemyBehavior
         float distance = GetDistanceToTarget();
         Vector2 moveDirection = distance < retreatRange ? -toTarget : toTarget;
 
+        if (supportWeaponIndex >= 0 && IsWeaponReloading(supportWeaponIndex) && TryMoveToCover())
+        {
+            HandleSpawning();
+            return;
+        }
+
         if (steering != null)
         {
             if (distance < retreatRange)
@@ -44,7 +50,7 @@ public class EnemyCarrierController : EnemyBehavior
 
         HandleSpawning();
 
-        if (supportWeaponIndex >= 0 && IsFacing(toTarget, 30f))
+        if (supportWeaponIndex >= 0 && CanFireAtTarget(toTarget, 30f))
         {
             TryFireWeapon(supportWeaponIndex, toTarget);
         }

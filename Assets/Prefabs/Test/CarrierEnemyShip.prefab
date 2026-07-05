@@ -118,6 +118,11 @@ MonoBehaviour:
   fireInterval: 0.5
   firingArc: 12
   minimumFireRange: 2
+  requireLineOfSightToFire: 1
+  lineOfSightBlockers:
+    serializedVersion: 2
+    m_Bits: 0
+  lineOfSightPadding: 0.25
 --- !u!50 &4863975444708632341
 Rigidbody2D:
   serializedVersion: 5
@@ -274,6 +279,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   acquirePlayerOnStart: 1
   targetRefreshInterval: 1
+  requireLineOfSightToFire: 1
+  lineOfSightBlockers:
+    serializedVersion: 2
+    m_Bits: 1024
+  lineOfSightPadding: 0.25
+  usesCoverWhileReloading: 0
+  coverMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  coverSearchRadius: 12
+  coverOffsetFromObstacle: 2.5
   retreatRange: 10
   aimDeadZone: 5
   spawnPrefab: {fileID: 6218820717555389854, guid: 6bb6d0e406f68184cad3320725d51b57, type: 3}

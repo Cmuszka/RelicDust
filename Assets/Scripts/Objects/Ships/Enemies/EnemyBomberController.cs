@@ -14,6 +14,11 @@ public class EnemyBomberController : EnemyBehavior
         Vector2 toTarget = GetDirectionToTarget();
         float distance = GetDistanceToTarget();
 
+        if (IsWeaponReloading(missileWeaponIndex) && TryMoveToCover())
+        {
+            return;
+        }
+
         if (steering != null)
         {
             if (Mathf.Abs(distance - preferredRange) <= rangeTolerance)
@@ -39,7 +44,7 @@ public class EnemyBomberController : EnemyBehavior
             SetMovement(thrustInput, rotationInput);
         }
 
-        if (distance <= ship.targeting.targetingRange && IsFacing(toTarget, launchArc))
+        if (distance <= ship.targeting.targetingRange && CanFireAtTarget(toTarget, launchArc))
         {
             TryFireWeapon(missileWeaponIndex, toTarget);
         }

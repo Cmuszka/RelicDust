@@ -27,8 +27,7 @@ public class MissionResultScreen : MonoBehaviour
 
         if (missionManager != null)
         {
-            missionManager.OnMissionCompleted.AddListener(ShowResult);
-            missionManager.OnMissionFailed.AddListener(ShowResult);
+            missionManager.MissionResultCreated += ShowResult;
         }
     }
 
@@ -36,14 +35,23 @@ public class MissionResultScreen : MonoBehaviour
     {
         if (missionManager != null)
         {
-            missionManager.OnMissionCompleted.RemoveListener(ShowResult);
-            missionManager.OnMissionFailed.RemoveListener(ShowResult);
+            missionManager.MissionResultCreated -= ShowResult;
         }
     }
 
     public void ShowResult()
     {
         if (missionManager == null)
+        {
+            return;
+        }
+
+        ShowResult(missionManager.LastResult);
+    }
+
+    public void ShowResult(MissionResult result)
+    {
+        if (result == null)
         {
             return;
         }
@@ -55,70 +63,39 @@ public class MissionResultScreen : MonoBehaviour
 
         if (titleText != null)
         {
-            titleText.text = missionManager.MissionSucceeded ? "MISSION COMPLETE" : "MISSION FAILED";
+            titleText.text = result.Succeeded ? "MISSION COMPLETE" : "MISSION FAILED";
         }
 
         if (primaryObjectiveText != null)
         {
             primaryObjectiveText.text = "Relay Status: "
-                + (missionManager.DataRecoveredPercent >= 100 ? "Reactivated" : "Incomplete")
+                + (result.RelayReactivated ? "Reactivated" : "Incomplete")
                 + "\nData Recovered: "
-                + missionManager.DataRecoveredPercent
+                + result.DataRecoveredPercent
                 + "%";
         }
 
         if (shipConditionText != null)
         {
-            shipConditionText.text = "Ship Condition: " + GetPlayerCondition();
+            shipConditionText.text = "Ship Condition: " + result.ShipCondition;
         }
 
         if (enemiesDestroyedText != null)
         {
-            enemiesDestroyedText.text = "Enemies Destroyed: " + missionManager.EnemiesDestroyed;
+            enemiesDestroyedText.text = "Enemies Destroyed: " + result.EnemiesDestroyed;
         }
 
         if (rewardsText != null)
         {
             rewardsText.text = "Recovered Salvage: "
-                + missionManager.SalvageRecovered
+                + result.SalvageRecovered
                 + "\nCredits Earned: "
-                + missionManager.CreditsEarned;
+                + result.CreditsEarned;
         }
 
         if (analysisText != null)
         {
-            analysisText.text = "Black Fleet Analysis:\n\"" + missionManager.RelicStoryHint + "\"";
+            analysisText.text = "Black Fleet Analysis:\n\"" + result.RelicStoryHint + "\"";
         }
-    }
-
-    private string GetPlayerCondition()
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        ShipHealth health = player != null ? player.GetComponent<ShipHealth>() : null;
-        if (health == null)
-        {
-            return "Unknown";
-        }
-
-        float hullPercent = health.MaxHullStrength > 0f
-            ? health.HullStrength / health.MaxHullStrength
-            : 0f;
-
-        if (hullPercent <= 0f)
-        {
-            return "Destroyed";
-        }
-
-        if (hullPercent < 0.35f)
-        {
-            return "Critical but operational";
-        }
-
-        if (hullPercent < 0.75f)
-        {
-            return "Damaged but operational";
-        }
-
-        return "Operational";
     }
 }

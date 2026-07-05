@@ -20,6 +20,11 @@ public class EnemyShipController : MonoBehaviour
     [SerializeField] private float firingArc = 12f;
     [SerializeField] private float minimumFireRange = 2f;
 
+    [Header("Line Of Sight")]
+    [SerializeField] private bool requireLineOfSightToFire = true;
+    [SerializeField] private LayerMask lineOfSightBlockers;
+    [SerializeField] private float lineOfSightPadding = 0.25f;
+
     private Ship ship;
     private ShipSteeringComputer steering;
     private float fireTimer;
@@ -167,7 +172,32 @@ public class EnemyShipController : MonoBehaviour
         Vector2 directionToTarget = GetDirectionToTarget();
         float angleToTarget = Vector2.Angle(transform.up, directionToTarget);
 
-        return angleToTarget <= firingArc;
+        return angleToTarget <= firingArc && (!requireLineOfSightToFire || HasLineOfSightToTarget());
+    }
+
+    private bool HasLineOfSightToTarget()
+    {
+        if (ship.targeting == null || ship.targeting.currentTarget == null)
+        {
+            return false;
+        }
+
+        Vector2 origin = transform.position;
+        Vector2 targetPosition = ship.targeting.currentTarget.transform.position;
+        Vector2 toTarget = targetPosition - origin;
+        float distance = toTarget.magnitude;
+        if (distance <= lineOfSightPadding)
+        {
+            return true;
+        }
+
+        RaycastHit2D hit = Physics2D.Raycast(
+            origin,
+            toTarget.normalized,
+            Mathf.Max(distance - lineOfSightPadding, 0f),
+            lineOfSightBlockers);
+
+        return hit.collider == null;
     }
 
     private bool HasValidTarget()

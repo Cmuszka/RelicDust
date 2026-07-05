@@ -36,9 +36,14 @@ public class EnemyInterceptorController : EnemyBehavior
         Vector2 moveDirection = GetMoveDirection(toTarget, distance);
         float thrust = GetThrust(distance);
 
+        if (attackRunState == AttackRunState.Reposition && IsWeaponReloading(weaponIndex) && TryMoveToCover())
+        {
+            return;
+        }
+
         Move(moveDirection, thrust);
 
-        if (distance <= attackRange && IsFacing(toTarget, firingArc))
+        if (distance <= attackRange && CanFireAtTarget(toTarget, firingArc))
         {
             TryFireWeapon(weaponIndex, toTarget);
         }

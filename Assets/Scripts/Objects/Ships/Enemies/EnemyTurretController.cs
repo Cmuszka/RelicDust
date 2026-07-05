@@ -20,7 +20,7 @@ public class EnemyTurretController : EnemyBehavior
             SetMovement(0f, GetRotationInputToward(toTarget, aimDeadZone));
         }
 
-        if (IsFacing(toTarget, firingArc))
+        if (CanFireAtTarget(toTarget, firingArc))
         {
             TryFireWeapon(weaponIndex, toTarget);
         }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,29 +14,13 @@ public enum MissionState
     MissionFailed
 }
 
-[Serializable]
-public class MissionSpawnGroup
-{
-    public GameObject enemyPrefab;
-    public int count = 1;
-    public Transform[] spawnPoints;
-    public float spawnRadius = 3f;
-    public float delayBetweenSpawns = 0.25f;
-}
-
-[Serializable]
-public class MissionWave
-{
-    public string waveName;
-    public MissionSpawnGroup[] groups;
-}
-
 public class MissionManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Ship playerShip;
     [SerializeField] private RelayObjective relayObjective;
     [SerializeField] private ExtractionZone extractionZone;
+    [SerializeField] private MissionSpawnService spawnService;
     [SerializeField] private bool findPlayerOnStart = true;
 
     [Header("Mission")]
@@ -69,9 +52,11 @@ public class MissionManager : MonoBehaviour
     public UnityEvent OnMissionFailed = new UnityEvent();
 
     public event Action<MissionState> StateChanged;
+    public event Action<MissionResult> MissionResultCreated;
 
     public MissionState CurrentState { get; private set; } = MissionState.MissionStart;
-    public int EnemiesDestroyed { get; private set; }
+    public MissionResult LastResult { get; private set; }
+    public int EnemiesDestroyed => spawnService != null ? spawnService.EnemiesDestroyed : 0;
     public bool MissionEnded => CurrentState == MissionState.MissionComplete || CurrentState == MissionState.MissionFailed;
     public bool MissionSucceeded => CurrentState == MissionState.MissionComplete;
     public int SalvageRecovered => MissionSucceeded ? salvageReward : 0;
@@ -192,10 +177,16 @@ public class MissionManager : MonoBehaviour
         relayStarted = false;
         escalationStarted = false;
         extractionStarted = false;
-        EnemiesDestroyed = 0;
+        LastResult = null;
+
+        if (spawnService != null)
+        {
+            spawnService.StopAllWaves();
+            spawnService.ResetTracking();
+        }
 
         SetState(MissionState.ApproachRelay);
-        StartCoroutine(SpawnWave(openingWave));
+        SpawnWave(openingWave);
     }
 
     public void CompleteMission()
@@ -206,6 +197,8 @@ public class MissionManager : MonoBehaviour
         }
 
         SetState(MissionState.MissionComplete);
+        CreateMissionResult();
+        StopSpawning();
         OnMissionCompleted?.Invoke();
     }
 
@@ -217,17 +210,17 @@ public class MissionManager : MonoBehaviour
         }
 
         SetState(MissionState.MissionFailed);
+        CreateMissionResult();
+        StopSpawning();
         OnMissionFailed?.Invoke();
     }
 
     public void RegisterEnemy(Ship enemyShip)
     {
-        if (enemyShip == null || enemyShip.health == null)
+        if (spawnService != null)
         {
-            return;
+            spawnService.RegisterEnemy(enemyShip);
         }
-
-        enemyShip.health.OnDeath.AddListener(HandleEnemyDestroyed);
     }
 
     private void UpdateMissionState()
@@ -270,7 +263,7 @@ public class MissionManager : MonoBehaviour
         SetState(MissionState.ActivateRelay);
         relayObjective.BeginUpload();
         SetState(MissionState.DefendRelay);
-        StartCoroutine(SpawnWave(relayDefenseWave));
+        SpawnWave(relayDefenseWave);
     }
 
     private void UpdateRelayDefense()
@@ -284,7 +277,7 @@ public class MissionManager : MonoBehaviour
         {
             escalationStarted = true;
             SetState(MissionState.Escalation);
-            StartCoroutine(SpawnWave(escalationWave));
+            SpawnWave(escalationWave);
         }
 
         if (relayObjective.IsComplete)
@@ -308,67 +301,74 @@ public class MissionManager : MonoBehaviour
             extractionZone.SetExtractionEnabled(true);
         }
 
-        StartCoroutine(SpawnWave(extractionWave));
+        SpawnWave(extractionWave);
     }
 
-    private IEnumerator SpawnWave(MissionWave wave)
+    private void SpawnWave(MissionWave wave)
     {
-        if (wave == null || wave.groups == null)
+        if (spawnService == null || MissionEnded)
         {
-            yield break;
+            return;
         }
 
-        foreach (MissionSpawnGroup group in wave.groups)
-        {
-            if (MissionEnded)
-            {
-                yield break;
-            }
-
-            if (group == null || group.enemyPrefab == null)
-            {
-                continue;
-            }
-
-            for (int i = 0; i < group.count; i++)
-            {
-                if (MissionEnded)
-                {
-                    yield break;
-                }
-
-                GameObject enemyObject = Instantiate(
-                    group.enemyPrefab,
-                    GetSpawnPosition(group),
-                    Quaternion.identity);
-
-                Ship enemyShip = enemyObject.GetComponent<Ship>();
-                RegisterEnemy(enemyShip);
-
-                if (group.delayBetweenSpawns > 0f)
-                {
-                    yield return new WaitForSeconds(group.delayBetweenSpawns);
-                }
-            }
-        }
+        spawnService.SpawnWave(wave);
     }
 
-    private Vector3 GetSpawnPosition(MissionSpawnGroup group)
+    private void CreateMissionResult()
     {
-        Transform spawnPoint = null;
-        if (group.spawnPoints != null && group.spawnPoints.Length > 0)
-        {
-            spawnPoint = group.spawnPoints[UnityEngine.Random.Range(0, group.spawnPoints.Length)];
-        }
+        bool succeeded = CurrentState == MissionState.MissionComplete;
+        bool relayReactivated = DataRecoveredPercent >= 100;
 
-        Vector3 center = spawnPoint != null ? spawnPoint.position : transform.position;
-        Vector2 offset = UnityEngine.Random.insideUnitCircle * Mathf.Max(group.spawnRadius, 0f);
-        return center + (Vector3)offset;
+        LastResult = new MissionResult(
+            CurrentState,
+            succeeded,
+            relayReactivated,
+            DataRecoveredPercent,
+            GetPlayerCondition(),
+            EnemiesDestroyed,
+            succeeded ? salvageReward : 0,
+            succeeded ? creditReward : 0,
+            relicStoryHint);
+
+        MissionResultCreated?.Invoke(LastResult);
     }
 
-    private void HandleEnemyDestroyed()
+    private string GetPlayerCondition()
     {
-        EnemiesDestroyed++;
+        ShipHealth health = playerShip != null ? playerShip.health : null;
+        if (health == null)
+        {
+            return "Unknown";
+        }
+
+        float hullPercent = health.MaxHullStrength > 0f
+            ? health.HullStrength / health.MaxHullStrength
+            : 0f;
+
+        if (hullPercent <= 0f)
+        {
+            return "Destroyed";
+        }
+
+        if (hullPercent < 0.35f)
+        {
+            return "Critical but operational";
+        }
+
+        if (hullPercent < 0.75f)
+        {
+            return "Damaged but operational";
+        }
+
+        return "Operational";
+    }
+
+    private void StopSpawning()
+    {
+        if (spawnService != null)
+        {
+            spawnService.StopAllWaves();
+        }
     }
 
     private void SetState(MissionState newState)
@@ -401,6 +401,21 @@ public class MissionManager : MonoBehaviour
         if (extractionZone == null)
         {
             extractionZone = FindFirstObjectByType<ExtractionZone>();
+        }
+
+        if (spawnService == null)
+        {
+            spawnService = GetComponent<MissionSpawnService>();
+        }
+
+        if (spawnService == null)
+        {
+            spawnService = FindFirstObjectByType<MissionSpawnService>();
+        }
+
+        if (spawnService == null)
+        {
+            spawnService = gameObject.AddComponent<MissionSpawnService>();
         }
     }
 }
