@@ -39,6 +39,14 @@ public class MissionResultScreen : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (resultRoot != null && resultRoot.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+        {
+            CloseResult();
+        }
+    }
+
     public void ShowResult()
     {
         if (missionManager == null)
@@ -96,6 +104,14 @@ public class MissionResultScreen : MonoBehaviour
         if (analysisText != null)
         {
             analysisText.text = "Black Fleet Analysis:\n\"" + result.RelicStoryHint + "\"";
+        }
+    }
+
+    public void CloseResult()
+    {
+        if (resultRoot != null)
+        {
+            resultRoot.SetActive(false);
         }
     }
 }
