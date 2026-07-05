@@ -158,6 +158,11 @@ MonoBehaviour:
   currentHullStrength: 0
   currentArmorHealth: 0
   currentShieldHealth: 0
+  regenerateShield: 1
+  shieldRegenPerSecond: 4
+  shieldRegenDelay: 3
+  shieldRegenUsesEnergy: 0
+  energyCostPerShieldPoint: 1
   OnDeath:
     m_PersistentCalls:
       m_Calls: []

@@ -14,6 +14,8 @@ public class WeaponStatusSlot : MonoBehaviour
     [Header("Colors")]
     [SerializeField] private Color selectedColor = Color.cyan;
     [SerializeField] private Color unselectedColor = new Color(1f, 1f, 1f, 0.15f);
+    [SerializeField] private Color selectedTextColor = Color.white;
+    [SerializeField] private Color unselectedTextColor = new Color(1f, 1f, 1f, 0.75f);
 
     public void SetWeapon(int weaponIndex, WeaponSystem weapon, Sprite icon, bool isSelected)
     {
@@ -41,6 +43,23 @@ public class WeaponStatusSlot : MonoBehaviour
         if (selectionHighlight != null)
         {
             selectionHighlight.color = isSelected ? selectedColor : unselectedColor;
+            selectionHighlight.gameObject.SetActive(isSelected);
+        }
+
+        Color textColor = isSelected ? selectedTextColor : unselectedTextColor;
+        if (weaponText != null)
+        {
+            weaponText.color = textColor;
+        }
+
+        if (cooldownText != null)
+        {
+            cooldownText.color = textColor;
+        }
+
+        if (weaponIcon != null)
+        {
+            weaponIcon.color = isSelected ? Color.white : unselectedTextColor;
         }
     }
 

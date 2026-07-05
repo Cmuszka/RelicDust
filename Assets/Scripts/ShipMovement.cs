@@ -39,6 +39,13 @@ public class ShipMovement : MonoBehaviour
     private float maxSpeedMultiplier = 1f;
     private const float EngineOnThreshold = 0.01f;
 
+    public float ThrustInput => thrustInput;
+    public float EngineThrottle => engineThrottle;
+    public float MaxReverseThrottle => Mathf.Abs(maxReverseThrottle);
+    public float NormalizedForwardThrottle => Mathf.Clamp01(engineThrottle);
+    public float NormalizedReverseThrottle => maxReverseThrottle > 0f ? Mathf.Clamp01(-engineThrottle / Mathf.Abs(maxReverseThrottle)) : 0f;
+    public bool EngineIsOn => Mathf.Abs(thrustInput) > EngineOnThreshold;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();

@@ -13,6 +13,13 @@ public class ShipHealth : MonoBehaviour
     [SerializeField] private float currentArmorHealth;
     [SerializeField] private float currentShieldHealth;
 
+    [Header("Shield Regeneration")]
+    [SerializeField] private bool regenerateShield = true;
+    [SerializeField] private float shieldRegenPerSecond = 4f;
+    [SerializeField] private float shieldRegenDelay = 3f;
+    [SerializeField] private bool shieldRegenUsesEnergy = true;
+    [SerializeField] private float energyCostPerShieldPoint = 1f;
+
     public UnityEvent OnDeath;
 
     public float HullStrength => currentHullStrength;
@@ -24,12 +31,20 @@ public class ShipHealth : MonoBehaviour
     public bool IsDead => currentHullStrength <= 0f;
 
     private Ship ship;
+    private ShipEnergy shipEnergy;
     private float temporaryShieldHealth;
+    private float shieldRegenDelayTimer;
 
     private void Awake()
     {
         ship = GetComponent<Ship>();
+        shipEnergy = GetComponent<ShipEnergy>();
         ResetHealth();
+    }
+
+    private void Update()
+    {
+        UpdateShieldRegeneration();
     }
 
     public void TakeDamage(float damage)
@@ -42,6 +57,7 @@ public class ShipHealth : MonoBehaviour
         damage = ApplyDamageToShield(damage);
         damage = ApplyDamageToLayer(damage, ref currentArmorHealth);
         ApplyDamageToLayer(damage, ref currentHullStrength);
+        ResetShieldRegenDelay();
 
         if (IsDead)
         {
@@ -64,6 +80,7 @@ public class ShipHealth : MonoBehaviour
 
         damage = ApplyDamageToLayer(damage, ref currentArmorHealth);
         ApplyDamageToLayer(damage, ref currentHullStrength);
+        ResetShieldRegenDelay();
 
         if (IsDead)
         {
@@ -119,6 +136,59 @@ public class ShipHealth : MonoBehaviour
         currentArmorHealth = armorHealth;
         currentShieldHealth = shieldHealth;
         temporaryShieldHealth = 0f;
+        shieldRegenDelayTimer = 0f;
+    }
+
+    private void UpdateShieldRegeneration()
+    {
+        if (!regenerateShield || IsDead || shieldRegenPerSecond <= 0f)
+        {
+            return;
+        }
+
+        if (shieldRegenDelayTimer > 0f)
+        {
+            shieldRegenDelayTimer -= Time.deltaTime;
+            return;
+        }
+
+        if (currentShieldHealth >= shieldHealth)
+        {
+            return;
+        }
+
+        float desiredRecharge = Mathf.Min(shieldRegenPerSecond * Time.deltaTime, shieldHealth - currentShieldHealth);
+        if (desiredRecharge <= 0f)
+        {
+            return;
+        }
+
+        if (shieldRegenUsesEnergy && energyCostPerShieldPoint > 0f)
+        {
+            if (shipEnergy == null)
+            {
+                return;
+            }
+
+            float availableRecharge = shipEnergy.CurrentEnergy / energyCostPerShieldPoint;
+            desiredRecharge = Mathf.Min(desiredRecharge, availableRecharge);
+            if (desiredRecharge <= 0f)
+            {
+                return;
+            }
+
+            shipEnergy.SpendEnergy(desiredRecharge * energyCostPerShieldPoint);
+        }
+
+        currentShieldHealth = Mathf.Min(currentShieldHealth + desiredRecharge, shieldHealth);
+    }
+
+    private void ResetShieldRegenDelay()
+    {
+        if (shieldRegenDelay > 0f)
+        {
+            shieldRegenDelayTimer = shieldRegenDelay;
+        }
     }
 
     private float ApplyDamageToShield(float damage)
