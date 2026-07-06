@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/BriefingScreen.unity
+    guid: e16e7011ca7b9c044a7f3ddc07f4e4bc
+  - enabled: 1
     path: Assets/Scenes/PlayTest.unity
     guid: 73760872c0b6b134cafa61b26aeb4e2d
   - enabled: 0
